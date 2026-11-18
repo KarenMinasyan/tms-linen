@@ -1,0 +1,34 @@
+{
+	"name": "tms-linen-backend",
+	"version": "1.0.0",
+	"private": true,
+	"scripts": {
+		"dev": "tsx watch src/index.ts",
+		"start": "tsx src/index.ts",
+		"type-check": "tsc --noEmit",
+		"lint": "biome check --write .",
+		"lint:check": "biome check .",
+		"db:generate": "prisma generate --config src/config/prisma.config.ts",
+		"db:migrate": "prisma migrate dev --config src/config/prisma.config.ts",
+		"db:seed": "tsx src/database/seed.ts",
+		"replay-events": "tsx src/scripts/replay-events.ts"
+	},
+	"dependencies": {
+		"@prisma/adapter-mariadb": "7.10.1",
+		"@prisma/client": "7.10.1",
+		"cors": "2.8.6",
+		"dotenv": "17.4.2",
+		"express": "5.2.1",
+		"winston": "3.19.0",
+		"zod": "4.3.6"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.6.4",
+		"@types/cors": "2.8.19",
+		"@types/express": "5.0.6",
+		"@types/node": "25.6.0",
+		"prisma": "7.10.1",
+		"tsx": "4.21.0",
+		"typescript": "6.0.3"
+	}
+}

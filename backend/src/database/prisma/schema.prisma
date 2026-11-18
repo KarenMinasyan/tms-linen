@@ -1,0 +1,82 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "./client"
+  moduleFormat = "cjs"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+model listings {
+  id              String         @id @db.VarChar(64)
+  name            String         @db.VarChar(255)
+  linen_attribute String         @db.VarChar(255)
+  reservations    reservations[]
+  tasks           tasks[]
+}
+
+model reservations {
+  id                        String   @id @db.VarChar(64)
+  listing_id                String   @db.VarChar(64)
+  status                    String   @db.VarChar(32)
+  planned_arrival_time      DateTime
+  planned_departure_time    DateTime
+  guests_count              Int
+  infants                   Int
+  number_of_guests_override Int?
+  requested_sofabed         Boolean
+  listings                  listings @relation(fields: [listing_id], references: [id], onDelete: Restrict, onUpdate: Cascade, map: "fk_reservations_listing_id")
+
+  @@index([listing_id, planned_arrival_time], map: "idx_reservations_listing_id_planned_arrival_time")
+}
+
+model tasks {
+  id             String          @id @db.VarChar(64)
+  task_type      String          @db.VarChar(64)
+  status         String          @db.VarChar(32)
+  listing_id     String?         @db.VarChar(64)
+  reservation_id String?         @db.VarChar(64)
+  planned_start  DateTime
+  listings       listings?       @relation(fields: [listing_id], references: [id], onDelete: SetNull, onUpdate: Cascade, map: "fk_tasks_listing_id")
+  task_linen     task_linen?
+  linen_history  linen_history[]
+
+  @@index([listing_id], map: "idx_tasks_listing_id")
+  @@index([reservation_id], map: "idx_tasks_reservation_id")
+}
+
+model task_linen {
+  task_id                   String  @id @db.VarChar(64)
+  sheets                    Int
+  towels                    Int
+  bathmats                  Int
+  handtowels                Int
+  dishtowels                Int
+  prepared_for_guests       Int
+  requested_sofabeds_count  Int
+  actual_guests             Int
+  infants                   Int
+  number_of_guests_override Int?
+  requested_sofabed         Boolean
+  tasks                     tasks   @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_task_linen_task_id")
+}
+
+model linen_history {
+  id         Int      @id @default(autoincrement())
+  task_id    String   @db.VarChar(64)
+  reason     String   @db.VarChar(255)
+  event_id   String?  @db.VarChar(128)
+  old_values Json?
+  new_values Json?
+  created_at DateTime @default(now())
+  tasks      tasks    @relation(fields: [task_id], references: [id], onDelete: Cascade, onUpdate: Cascade, map: "fk_linen_history_task_id")
+
+  @@index([task_id, created_at], map: "idx_linen_history_task_id_created_at")
+}
+
+model event_idempotency {
+  event_id     String   @id @db.VarChar(128)
+  event_type   String   @db.VarChar(64)
+  processed_at DateTime @default(now())
+}
